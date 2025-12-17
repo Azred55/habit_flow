@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_flow/features/task_list/models/habit.dart';
 
 class ItemList extends StatelessWidget {
   const ItemList({
@@ -6,19 +7,42 @@ class ItemList extends StatelessWidget {
     required this.items,
     required this.onEdit,
     required this.onDelete,
+    required this.onToggleCompletion,
+    this.shrinkWrap = false,
+    this.physics,
   });
 
-  final List<String> items;
-  final void Function(int index, String newItem) onEdit;
-  final void Function(int index) onDelete;
+  final List<Habit> items;
+  final void Function(Habit habit, String newItem) onEdit;
+  final void Function(Habit habit) onDelete;
+  final void Function(Habit habit) onToggleCompletion;
+  final bool shrinkWrap;
+  final ScrollPhysics? physics;
 
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
+      shrinkWrap: shrinkWrap,
+      physics: physics,
       itemCount: items.length,
       itemBuilder: (context, index) {
+        final habit = items[index];
+
         return ListTile(
-          title: Text(items[index]),
+          leading: Checkbox(
+            value: habit.isCompletedToday,
+            onChanged: (_) => onToggleCompletion(habit),
+          ),
+          title: Text(
+            habit.title,
+            style: habit.isCompletedToday
+                ? const TextStyle(
+                    decoration: TextDecoration.lineThrough,
+                    color: Colors.grey,
+                  )
+                : null,
+          ),
+          subtitle: Text('Streak: ${habit.currentStreak} Tage'),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -26,18 +50,18 @@ class ItemList extends StatelessWidget {
                 icon: const Icon(Icons.edit),
                 onPressed: () {
                   TextEditingController editController = TextEditingController(
-                    text: items[index],
+                    text: habit.title,
                   );
                   showDialog(
                     context: context,
                     builder: (context) {
                       return AlertDialog(
-                        title: const Text('Task bearbeiten'),
+                        title: const Text('Habit bearbeiten'),
                         content: TextField(
                           autofocus: true,
                           controller: editController,
                           decoration: const InputDecoration(
-                            hintText: "Task bearbeiten",
+                            hintText: 'Habit bearbeiten',
                           ),
                         ),
                         actions: [
@@ -50,7 +74,7 @@ class ItemList extends StatelessWidget {
                           TextButton(
                             child: const Text('Speichern'),
                             onPressed: () {
-                              onEdit(index, editController.text);
+                              onEdit(habit, editController.text);
                               Navigator.of(context).pop();
                             },
                           ),
@@ -63,7 +87,7 @@ class ItemList extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.delete),
                 onPressed: () {
-                  onDelete(index);
+                  onDelete(habit);
                 },
               ),
             ],

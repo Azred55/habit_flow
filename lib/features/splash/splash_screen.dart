@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:habit_flow/core/router/app_router.dart';
 
@@ -38,10 +37,10 @@ class _SplashScreenState extends State<SplashScreen> {
                 highlightColor: const Color.fromRGBO(228, 132, 255, 0.724),
                 child: Text(
                   'Willkommen zu Habit Flow',
-                  style: GoogleFonts.robotoMono(
-                    textStyle: Theme.of(context).textTheme.headlineMedium
-                        ?.copyWith(fontSize: 36, fontWeight: FontWeight.w800),
-                  ),
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
+                      ),
                 ),
               ),
               const SizedBox(height: 20),

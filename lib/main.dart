@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:habit_flow/app.dart';
 import 'package:habit_flow/core/config/supabase_options.dart';
+import 'package:habit_flow/core/providers/supabase_client_provider.dart';
 import 'package:habit_flow/core/sync/habit_sync_service.dart';
 import 'package:habit_flow/features/notifications/notification_service.dart';
 import 'package:habit_flow/features/notifications/providers/notification_providers.dart';
@@ -39,6 +40,7 @@ Future<void> main() async {
     ProviderScope(
       overrides: [
         notificationServiceProvider.overrideWithValue(notificationService),
+        supabaseClientProvider.overrideWithValue(supabaseClient),
         habitSyncServiceProvider.overrideWithValue(habitSyncService),
       ],
       child: const App(),

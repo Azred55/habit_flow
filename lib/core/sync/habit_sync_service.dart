@@ -27,17 +27,20 @@ class HabitSyncService {
   Timer? _retryTimer;
 
   bool get _hasClient => _client != null;
+  bool get _isAuthenticated {
+    final client = _client;
+    if (client == null) return false;
+    return client.auth.currentSession != null;
+  }
 
   Future<void> initialize() async {
-    if (!_hasClient) return;
-    await _ensureSession();
+    if (!_hasClient || !_isAuthenticated) return;
     await syncFromRemote();
     await _processQueue();
   }
 
   Future<void> syncFromRemote() async {
-    if (!_hasClient) return;
-    await _ensureSession();
+    if (!_hasClient || !_isAuthenticated) return;
 
     try {
       final rows =
@@ -94,7 +97,7 @@ class HabitSyncService {
   }
 
   Future<void> _processQueue() async {
-    if (!_hasClient || _isProcessingQueue) return;
+    if (!_hasClient || _isProcessingQueue || !_isAuthenticated) return;
     _isProcessingQueue = true;
 
     try {
@@ -121,8 +124,7 @@ class HabitSyncService {
   }
 
   Future<void> _pushHabit(Habit habit) async {
-    if (!_hasClient) return;
-    await _ensureSession();
+    if (!_hasClient || !_isAuthenticated) return;
     try {
       await _client!.from(_tableName).upsert(habit.toRemoteMap());
       await _updateQueuedIds(
@@ -136,8 +138,7 @@ class HabitSyncService {
   }
 
   Future<void> _deleteRemoteHabit(String habitId) async {
-    if (!_hasClient) return;
-    await _ensureSession();
+    if (!_hasClient || !_isAuthenticated) return;
     try {
       await _client!.from(_tableName).delete().eq('id', habitId);
       await _updateQueuedIds(_pendingDeletesKey, (set) => set..remove(habitId));
@@ -145,12 +146,6 @@ class HabitSyncService {
       debugPrint('Supabase-Löschung fehlgeschlagen: $error\n$stackTrace');
       _scheduleQueueRetry();
     }
-  }
-
-  Future<void> _ensureSession() async {
-    if (!_hasClient) return;
-    if (_client!.auth.currentSession != null) return;
-    await _client.auth.signInAnonymously();
   }
 
   Habit? _findHabit(String id) {
